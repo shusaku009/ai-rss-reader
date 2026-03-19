@@ -52,6 +52,7 @@ export interface Database {
           tags: string[]
           author: string | null
           published_at: string | null
+          thumbnail_url: string | null
           created_at: string
         }
         Insert: {
@@ -64,6 +65,7 @@ export interface Database {
           tags?: string[]
           author?: string | null
           published_at?: string | null
+          thumbnail_url?: string | null
           created_at?: string
         }
         Update: {
@@ -73,6 +75,7 @@ export interface Database {
           tags?: string[]
           author?: string | null
           published_at?: string | null
+          thumbnail_url?: string | null
         }
       }
       user_feeds: {

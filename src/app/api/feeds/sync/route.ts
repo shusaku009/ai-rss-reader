@@ -29,6 +29,7 @@ export async function POST(request: Request) {
             content: a.content,
             author: a.author,
             published_at: a.publishedAt,
+            thumbnail_url: a.thumbnailUrl,
           }))
 
         await insertArticles(supabase, articles)
