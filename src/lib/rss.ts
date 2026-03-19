@@ -62,7 +62,8 @@ export async function fetchFeed(url: string): Promise<FetchedFeed> {
     const articles: FetchedArticle[] = (feed.items ?? [])
       .slice(0, 50)
       .map(item => {
-        const rawContent = item['content:encoded'] ?? item.content ?? item.summary ?? null
+        const raw = item as Record<string, unknown>
+        const rawContent = (raw['content:encoded'] ?? item.content ?? item.summary ?? null) as string | null
         const cleanContent = rawContent ? stripHtml(rawContent).slice(0, 5000) : null
 
         return {
@@ -71,7 +72,7 @@ export async function fetchFeed(url: string): Promise<FetchedFeed> {
           content: cleanContent,
           author: item.creator ?? item.author ?? null,
           publishedAt: item.pubDate ?? item.isoDate ?? null,
-          thumbnailUrl: extractThumbnail(item as Record<string, unknown>),
+          thumbnailUrl: extractThumbnail(raw),
         }
       })
       .filter(a => a.url !== '')
