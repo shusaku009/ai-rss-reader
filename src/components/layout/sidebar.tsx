@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { BookOpen, Rss, Star, LogOut, ChevronDown, ChevronRight } from 'lucide-react'
+import { BookOpen, Rss, Star, LogOut, ChevronDown, ChevronRight, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -101,6 +101,19 @@ export function Sidebar() {
             </div>
           )}
         </div>
+
+        <Link
+          href="/search"
+          className={cn(
+            'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+            pathname === '/search'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+          )}
+        >
+          <Search className="h-4 w-4" />
+          検索
+        </Link>
 
         <Link
           href="/favorites"
