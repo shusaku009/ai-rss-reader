@@ -6,8 +6,7 @@ import { getArticleById, upsertUserArticle } from '@/lib/db/articles'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ChatPanel } from '@/components/chat/chat-panel'
-import { SummarySection } from '@/components/articles/summary-section'
-import { ArticleContent } from '@/components/articles/article-content'
+import { ArticleViewTabs } from '@/components/articles/article-view-tabs'
 import type { ChatMessage } from '@/types/database'
 import { formatDistanceToNow } from '@/lib/format-date'
 
@@ -87,13 +86,11 @@ export default async function ArticleDetailPage({ params }: Props) {
               </div>
             </div>
 
-            <SummarySection
+            <ArticleViewTabs
               articleId={id}
+              initialContent={article.content}
               initialSummary={article.summary}
-              hasContent={!!article.content}
             />
-
-            <ArticleContent articleId={id} initialContent={article.content} />
           </div>
         </div>
       </div>

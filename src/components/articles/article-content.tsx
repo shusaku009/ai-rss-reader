@@ -1,23 +1,21 @@
 'use client'
 
-import { useState } from 'react'
 import { ExtractButton } from './extract-button'
 
 interface ArticleContentProps {
   articleId: string
-  initialContent: string | null
+  content: string | null
+  onContentChange: (content: string) => void
 }
 
-export function ArticleContent({ articleId, initialContent }: ArticleContentProps) {
-  const [content, setContent] = useState(initialContent)
-
+export function ArticleContent({ articleId, content, onContentChange }: ArticleContentProps) {
   return (
-    <div className="border-t pt-4 space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-muted-foreground">
           {content ? '記事本文' : '記事本文（未取得）'}
         </h3>
-        <ExtractButton articleId={articleId} onExtracted={setContent} />
+        <ExtractButton articleId={articleId} onExtracted={onContentChange} />
       </div>
 
       {content ? (
