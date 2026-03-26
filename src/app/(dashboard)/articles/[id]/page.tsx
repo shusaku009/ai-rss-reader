@@ -61,6 +61,15 @@ export default async function ArticleDetailPage({ params }: Props) {
                 ))}
               </div>
               <h1 className="text-2xl font-bold leading-tight">{article.title}</h1>
+              {article.thumbnail_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={article.thumbnail_url}
+                  alt=""
+                  className="mt-3 w-full max-h-64 object-cover rounded-lg"
+                  loading="lazy"
+                />
+              )}
               <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
                 {article.author && <span>{article.author}</span>}
                 {article.published_at && (
