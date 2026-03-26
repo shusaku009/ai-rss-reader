@@ -1,33 +1,48 @@
 'use client'
 
-import { ExtractButton } from './extract-button'
+import { Loader2 } from 'lucide-react'
 
 interface ArticleContentProps {
   articleId: string
   content: string | null
   onContentChange: (content: string) => void
+  loading?: boolean
 }
 
-export function ArticleContent({ articleId, content, onContentChange }: ArticleContentProps) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-muted-foreground">
-          {content ? '記事本文' : '記事本文（未取得）'}
-        </h3>
-        <ExtractButton articleId={articleId} onExtracted={onContentChange} />
-      </div>
+function isHtml(text: string): boolean {
+  return text.trimStart().startsWith('<')
+}
 
-      {content ? (
-        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-          {content.slice(0, 5000)}
-          {content.length > 5000 && '…'}
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground italic">
-          「全文を取得」ボタンで元記事から本文を取得できます。
-        </p>
-      )}
-    </div>
+export function ArticleContent({ content, loading }: ArticleContentProps) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16 text-muted-foreground gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-sm">記事を読み込み中...</span>
+      </div>
+    )
+  }
+
+  if (!content) {
+    return (
+      <p className="text-sm text-muted-foreground italic py-4">
+        記事の全文を取得できませんでした。
+      </p>
+    )
+  }
+
+  if (isHtml(content)) {
+    return (
+      <div
+        className="article-prose"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    )
+  }
+
+  return (
+    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+      {content}
+    </p>
   )
 }

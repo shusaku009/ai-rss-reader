@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FileText, Sparkles } from 'lucide-react'
+import { toast } from 'sonner'
 import { ArticleContent } from './article-content'
 import { SummarySection } from './summary-section'
 
@@ -16,6 +17,23 @@ interface ArticleViewTabsProps {
 export function ArticleViewTabs({ articleId, initialContent, initialSummary }: ArticleViewTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('content')
   const [content, setContent] = useState(initialContent)
+  const [loadingContent, setLoadingContent] = useState(initialContent === null)
+
+  useEffect(() => {
+    if (initialContent !== null) return
+
+    fetch(`/api/articles/${articleId}/extract`, { method: 'POST' })
+      .then(r => r.json())
+      .then(data => {
+        if (data.content) {
+          setContent(data.content)
+        } else if (data.error) {
+          toast.error('記事の全文を取得できませんでした')
+        }
+      })
+      .catch(() => toast.error('記事の取得中にエラーが発生しました'))
+      .finally(() => setLoadingContent(false))
+  }, [articleId, initialContent])
 
   return (
     <div>
@@ -50,6 +68,7 @@ export function ArticleViewTabs({ articleId, initialContent, initialSummary }: A
             articleId={articleId}
             content={content}
             onContentChange={setContent}
+            loading={loadingContent}
           />
         ) : (
           <SummarySection
