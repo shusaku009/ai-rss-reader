@@ -56,6 +56,45 @@ export async function unsubscribeFeed(
   if (error) throw new Error(`Failed to unsubscribe: ${error.message}`)
 }
 
+export async function registerFeed(
+  supabase: Client,
+  data: {
+    url: string
+    title: string
+    description: string | null
+    siteUrl: string | null
+    category?: import('@/types/database').FeedCategory
+    submittedBy?: string
+  }
+): Promise<{ feed: import('@/types/database').Feed; alreadyExisted: boolean }> {
+  // Try to find existing feed first
+  const { data: existing } = await supabase
+    .from('feeds')
+    .select('*')
+    .eq('url', data.url)
+    .maybeSingle()
+
+  if (existing) {
+    return { feed: existing, alreadyExisted: true }
+  }
+
+  const { data: inserted, error } = await supabase
+    .from('feeds')
+    .insert({
+      url: data.url,
+      title: data.title,
+      description: data.description,
+      site_url: data.siteUrl,
+      category: data.category ?? 'other',
+      submitted_by: data.submittedBy ?? null,
+    })
+    .select('*')
+    .single()
+
+  if (error) throw new Error(`Failed to register feed: ${error.message}`)
+  return { feed: inserted, alreadyExisted: false }
+}
+
 export async function updateFeedLastFetched(
   supabase: Client,
   feedId: string

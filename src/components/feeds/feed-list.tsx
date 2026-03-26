@@ -7,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Feed, FeedCategory } from '@/types/database'
+import { AddFeedForm } from './add-feed-form'
+import { OPMLImportButton } from './opml-import-button'
+import { OPMLExportButton } from './opml-export-button'
 
-type FeedWithSubscription = Feed & { isSubscribed: boolean }
+export type FeedWithSubscription = Feed & { isSubscribed: boolean }
 
 const CATEGORY_LABELS: Record<FeedCategory, string> = {
   languages: '言語 / フレームワーク',
@@ -19,18 +22,32 @@ const CATEGORY_LABELS: Record<FeedCategory, string> = {
   other: 'その他',
 }
 
-export function FeedList() {
+interface FeedListProps {
+  onFeedsChange?: (feeds: FeedWithSubscription[]) => void
+}
+
+export function FeedList({ onFeedsChange }: FeedListProps) {
   const [feeds, setFeeds] = useState<FeedWithSubscription[]>([])
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState<string | null>(null)
 
+  const updateFeeds = (next: FeedWithSubscription[]) => {
+    setFeeds(next)
+    onFeedsChange?.(next)
+  }
+
   useEffect(() => {
     fetch('/api/feeds')
       .then(r => r.json())
-      .then(({ feeds }) => setFeeds(feeds))
+      .then(({ feeds }) => updateFeeds(feeds))
       .catch(() => toast.error('フィードの取得に失敗しました'))
       .finally(() => setLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const handleFeedAdded = (feed: FeedWithSubscription) => {
+    updateFeeds([...feeds, feed])
+  }
 
   const toggle = async (feed: FeedWithSubscription) => {
     setToggling(feed.id)
@@ -42,9 +59,7 @@ export function FeedList() {
       })
       if (!res.ok) throw new Error('Failed')
 
-      setFeeds(prev =>
-        prev.map(f => f.id === feed.id ? { ...f, isSubscribed: !f.isSubscribed } : f)
-      )
+      updateFeeds(feeds.map(f => f.id === feed.id ? { ...f, isSubscribed: !f.isSubscribed } : f))
       toast(feed.isSubscribed ? `${feed.title} の購読を解除しました` : `${feed.title} を購読しました`)
     } catch {
       toast.error('操作に失敗しました')
@@ -68,6 +83,11 @@ export function FeedList() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 flex-wrap">
+        <AddFeedForm onAdded={handleFeedAdded} />
+        <OPMLImportButton onImported={handleFeedAdded} />
+        <OPMLExportButton />
+      </div>
       {(Object.keys(CATEGORY_LABELS) as FeedCategory[]).map(category => {
         const categoryFeeds = grouped[category] ?? []
         if (categoryFeeds.length === 0) return null
