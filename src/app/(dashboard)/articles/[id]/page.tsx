@@ -52,37 +52,39 @@ export default async function ArticleDetailPage({ params }: Props) {
           </div>
 
           <div className="space-y-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Badge variant="secondary">{article.feeds?.title}</Badge>
-                {article.tags?.map(tag => (
-                  <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
-                ))}
-              </div>
-              <h1 className="text-2xl font-bold leading-tight">{article.title}</h1>
+            <div className="flex gap-4 items-start">
               {article.thumbnail_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={article.thumbnail_url}
                   alt=""
-                  className="mt-3 w-full max-h-64 object-cover rounded-lg"
+                  className="w-36 h-24 object-cover rounded-lg shrink-0"
                   loading="lazy"
                 />
               )}
-              <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                {article.author && <span>{article.author}</span>}
-                {article.published_at && (
-                  <span>{formatDistanceToNow(article.published_at)}</span>
-                )}
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-foreground"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  元記事を読む
-                </a>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <Badge variant="secondary">{article.feeds?.title}</Badge>
+                  {article.tags?.map(tag => (
+                    <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
+                <h1 className="text-xl font-bold leading-snug">{article.title}</h1>
+                <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground flex-wrap">
+                  {article.author && <span>{article.author}</span>}
+                  {article.published_at && (
+                    <span>{formatDistanceToNow(article.published_at)}</span>
+                  )}
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    元記事を読む
+                  </a>
+                </div>
               </div>
             </div>
 
