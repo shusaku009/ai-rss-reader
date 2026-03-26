@@ -15,23 +15,30 @@ interface ArticleViewTabsProps {
 }
 
 export function ArticleViewTabs({ articleId, initialContent, initialSummary }: ArticleViewTabsProps) {
+  const SHORT_CONTENT_THRESHOLD = 3000
+
   const [activeTab, setActiveTab] = useState<Tab>('content')
   const [content, setContent] = useState(initialContent)
   const [loadingContent, setLoadingContent] = useState(initialContent === null)
 
   useEffect(() => {
-    if (initialContent !== null) return
+    const isShort = !initialContent || initialContent.length < SHORT_CONTENT_THRESHOLD
+    if (!isShort) return
+
+    if (initialContent === null) setLoadingContent(true)
 
     fetch(`/api/articles/${articleId}/extract`, { method: 'POST' })
       .then(r => r.json())
       .then(data => {
         if (data.content) {
           setContent(data.content)
-        } else if (data.error) {
+        } else if (data.error && initialContent === null) {
           toast.error('記事の全文を取得できませんでした')
         }
       })
-      .catch(() => toast.error('記事の取得中にエラーが発生しました'))
+      .catch(() => {
+        if (initialContent === null) toast.error('記事の取得中にエラーが発生しました')
+      })
       .finally(() => setLoadingContent(false))
   }, [articleId, initialContent])
 

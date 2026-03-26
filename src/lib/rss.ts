@@ -64,12 +64,12 @@ export async function fetchFeed(url: string): Promise<FetchedFeed> {
       .map(item => {
         const raw = item as unknown as Record<string, unknown>
         const rawContent = (raw['content:encoded'] ?? item.content ?? item.summary ?? null) as string | null
-        const cleanContent = rawContent ? stripHtml(rawContent).slice(0, 5000) : null
+        const content = rawContent ? sanitizeHtml(rawContent) : null
 
         return {
           title: item.title ?? 'No title',
           url: item.link ?? item.guid ?? '',
-          content: cleanContent,
+          content,
           author: item.creator ?? (raw['author'] as string | undefined) ?? null,
           publishedAt: item.pubDate ?? item.isoDate ?? null,
           thumbnailUrl: extractThumbnail(raw),
@@ -88,15 +88,16 @@ export async function fetchFeed(url: string): Promise<FetchedFeed> {
   }
 }
 
-function stripHtml(html: string): string {
+function sanitizeHtml(html: string): string {
   return html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+    .replace(/<embed\b[^>]*>/gi, '')
+    .replace(/(\s)on\w+="[^"]*"/gi, '$1')
+    .replace(/(\s)on\w+='[^']*'/gi, '$1')
+    .replace(/href="javascript:[^"]*"/gi, 'href="#"')
+    .replace(/href='javascript:[^']*'/gi, "href='#'")
+    .slice(0, 200_000)
 }
