@@ -18,22 +18,29 @@ export async function POST(_request: Request, { params }: Props) {
 
     const article = await getArticleById(supabase, id)
 
-    if (article.content && article.content.length >= SHORT_CONTENT_THRESHOLD) {
+    const needsContent = !article.content || article.content.length < SHORT_CONTENT_THRESHOLD
+    const needsThumbnail = !article.thumbnail_url
+
+    if (!needsContent && !needsThumbnail) {
       return NextResponse.json({ content: article.content, skipped: true })
     }
 
-    const content = await extractArticleContent(article.url)
+    const { content, ogImage } = await extractArticleContent(article.url)
 
-    if (content) {
+    const updateData: Record<string, string | null> = {}
+    if (content && needsContent) updateData.content = content
+    if (ogImage && needsThumbnail) updateData.thumbnail_url = ogImage
+
+    if (Object.keys(updateData).length > 0) {
       const { error } = await supabase
         .from('articles')
-        .update({ content })
+        .update(updateData)
         .eq('id', id)
 
       if (error) throw new Error(`Failed to update article: ${error.message}`)
     }
 
-    return NextResponse.json({ content, skipped: false })
+    return NextResponse.json({ content: content ?? article.content, skipped: false })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal error' },

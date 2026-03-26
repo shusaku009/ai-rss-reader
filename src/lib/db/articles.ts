@@ -102,4 +102,18 @@ export async function insertArticles(
     .upsert(articles, { onConflict: 'url', ignoreDuplicates: true })
 
   if (error) throw new Error(`Failed to insert articles: ${error.message}`)
+
+  // Backfill thumbnail_url for existing articles that don't have one yet
+  const withThumbs = articles.filter(a => a.thumbnail_url)
+  if (withThumbs.length > 0) {
+    await Promise.all(
+      withThumbs.map(a =>
+        supabase
+          .from('articles')
+          .update({ thumbnail_url: a.thumbnail_url })
+          .eq('url', a.url)
+          .is('thumbnail_url', null)
+      )
+    )
+  }
 }

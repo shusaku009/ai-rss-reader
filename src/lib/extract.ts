@@ -3,9 +3,13 @@ import { Readability } from '@mozilla/readability'
 
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024 // 5MB
 const FETCH_TIMEOUT_MS = 15_000
-const MAX_CONTENT_LENGTH = 50_000
 
-export async function extractArticleContent(url: string): Promise<string | null> {
+export interface ExtractResult {
+  content: string | null
+  ogImage: string | null
+}
+
+export async function extractArticleContent(url: string): Promise<ExtractResult> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
@@ -53,15 +57,17 @@ export async function extractArticleContent(url: string): Promise<string | null>
     const html = new TextDecoder().decode(merged)
 
     const { document } = parseHTML(html)
+
+    const ogImageMeta = (
+      document.querySelector('meta[property="og:image"]') ??
+      document.querySelector('meta[name="og:image"]')
+    ) as Element | null
+    const ogImage = ogImageMeta?.getAttribute('content') ?? null
+
     const reader2 = new Readability(document as unknown as Document)
     const article = reader2.parse()
 
-    if (!article?.textContent) return null
-
-    return article.textContent
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, MAX_CONTENT_LENGTH)
+    return { content: article?.content ?? null, ogImage }
   } finally {
     clearTimeout(timer)
   }
