@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ChatPanel } from '@/components/chat/chat-panel'
 import { SummarySection } from '@/components/articles/summary-section'
+import { ArticleContent } from '@/components/articles/article-content'
 import type { ChatMessage } from '@/types/database'
 import { formatDistanceToNow } from '@/lib/format-date'
 
@@ -83,15 +84,7 @@ export default async function ArticleDetailPage({ params }: Props) {
               hasContent={!!article.content}
             />
 
-            {article.content && (
-              <div className="prose prose-sm dark:prose-invert max-w-none border-t pt-4">
-                <h3 className="text-base font-semibold mb-3 text-muted-foreground">記事本文（抜粋）</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {article.content.slice(0, 2000)}
-                  {article.content.length > 2000 && '...'}
-                </p>
-              </div>
-            )}
+            <ArticleContent articleId={id} initialContent={article.content} />
           </div>
         </div>
       </div>
