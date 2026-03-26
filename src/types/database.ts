@@ -20,6 +20,7 @@ export interface Database {
           category: FeedCategory
           site_url: string | null
           last_fetched_at: string | null
+          submitted_by: string | null
           created_at: string
         }
         Insert: {
@@ -30,6 +31,7 @@ export interface Database {
           category?: FeedCategory
           site_url?: string | null
           last_fetched_at?: string | null
+          submitted_by?: string | null
           created_at?: string
         }
         Update: {
@@ -39,6 +41,7 @@ export interface Database {
           category?: FeedCategory
           site_url?: string | null
           last_fetched_at?: string | null
+          submitted_by?: string | null
         }
       }
       articles: {
@@ -142,7 +145,30 @@ export interface Database {
       }
     }
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      search_articles: {
+        Args: {
+          query: string
+          uid: string
+          lim?: number
+          off?: number
+        }
+        Returns: Array<{
+          id: string
+          feed_id: string
+          title: string
+          url: string
+          content: string | null
+          summary: string | null
+          tags: string[]
+          author: string | null
+          published_at: string | null
+          thumbnail_url: string | null
+          created_at: string
+          rank: number
+        }>
+      }
+    }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }
