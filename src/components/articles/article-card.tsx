@@ -40,18 +40,18 @@ export function ArticleCard({ article }: ArticleCardProps) {
 
   return (
     <Card className={`transition-opacity ${isRead ? 'opacity-60' : ''}`}>
+      {article.thumbnail_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={article.thumbnail_url}
+          alt=""
+          className="w-full h-40 object-cover"
+          loading="lazy"
+          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+        />
+      )}
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          {article.thumbnail_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={article.thumbnail_url}
-              alt=""
-              className="w-20 h-16 object-cover rounded shrink-0"
-              loading="lazy"
-              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-            />
-          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="secondary" className="text-xs shrink-0">
