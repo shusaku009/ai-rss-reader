@@ -18,8 +18,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const parsed = SearchParamsSchema.safeParse({
       q: searchParams.get('q') ?? '',
-      limit: searchParams.get('limit'),
-      offset: searchParams.get('offset'),
+      limit: searchParams.get('limit') ?? undefined,
+      offset: searchParams.get('offset') ?? undefined,
     })
 
     if (!parsed.success) {
