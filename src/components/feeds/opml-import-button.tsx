@@ -4,13 +4,9 @@ import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
-import type { Feed } from '@/types/database'
+import { MAX_IMPORT_FEEDS } from '@/lib/opml'
 
-interface OPMLImportButtonProps {
-  onImported: (feed: Feed & { isSubscribed: boolean }) => void
-}
-
-export function OPMLImportButton({ onImported }: OPMLImportButtonProps) {
+export function OPMLImportButton() {
   const [loading, setLoading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -34,14 +30,9 @@ export function OPMLImportButton({ onImported }: OPMLImportButtonProps) {
         return
       }
 
-      const msg = `${data.imported}件をインポートしました${data.failed > 0 ? `（${data.failed}件失敗）` : ''}${data.truncated ? `（上限${50}件）` : ''}`
+      const msg = `${data.imported}件をインポートしました${data.failed > 0 ? `（${data.failed}件失敗）` : ''}${data.truncated ? `（上限${MAX_IMPORT_FEEDS}件）` : ''}`
       toast(msg)
-
-      // Refresh the page to show newly imported feeds
       window.location.reload()
-      // Note: onImported is not called here because we're doing a full reload
-      // to get all the newly imported feeds at once
-      void onImported
     } catch {
       toast.error('インポートに失敗しました')
     } finally {

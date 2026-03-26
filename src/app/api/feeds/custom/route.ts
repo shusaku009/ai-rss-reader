@@ -2,29 +2,13 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { fetchFeed } from '@/lib/rss'
 import { registerFeed, subscribeFeed } from '@/lib/db/feeds'
+import { isPrivateIp } from '@/lib/ssrf'
 import { z } from 'zod'
 
 const AddFeedSchema = z.object({
   url: z.string().url('有効なURLを入力してください'),
   category: z.enum(['languages', 'engineering', 'community', 'infrastructure', 'platform', 'other']).optional(),
 })
-
-function isPrivateIp(url: string): boolean {
-  try {
-    const { hostname } = new URL(url)
-    return (
-      hostname === 'localhost' ||
-      hostname === '127.0.0.1' ||
-      hostname.startsWith('192.168.') ||
-      hostname.startsWith('10.') ||
-      hostname.startsWith('172.16.') ||
-      hostname === '0.0.0.0' ||
-      hostname.endsWith('.local')
-    )
-  } catch {
-    return false
-  }
-}
 
 export async function POST(request: Request) {
   try {

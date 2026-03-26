@@ -20,6 +20,12 @@ export function SearchBar({ initialQuery = '', className }: SearchBarProps) {
   }, [initialQuery])
 
   useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()

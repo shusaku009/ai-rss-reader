@@ -1,6 +1,17 @@
 import { DOMParser } from '@xmldom/xmldom'
 import type { Feed, FeedCategory } from '@/types/database'
 
+export const MAX_IMPORT_FEEDS = 50
+
+function escapeXmlAttr(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
 export interface OPMLEntry {
   title: string
   xmlUrl: string
@@ -11,9 +22,9 @@ export interface OPMLEntry {
 export function generateOpml(feeds: Feed[]): string {
   const outlines = feeds
     .map(f => {
-      const title = f.title.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      const xmlUrl = f.url.replace(/&/g, '&amp;')
-      const htmlUrl = f.site_url ? ` htmlUrl="${f.site_url.replace(/&/g, '&amp;')}"` : ''
+      const title = escapeXmlAttr(f.title)
+      const xmlUrl = escapeXmlAttr(f.url)
+      const htmlUrl = f.site_url ? ` htmlUrl="${escapeXmlAttr(f.site_url)}"` : ''
       return `    <outline type="rss" text="${title}" title="${title}" xmlUrl="${xmlUrl}"${htmlUrl}/>`
     })
     .join('\n')
@@ -44,7 +55,6 @@ export function parseOpml(xmlString: string): OPMLEntry[] {
     const type = outline.getAttribute('type')
     const xmlUrl = outline.getAttribute('xmlUrl') ?? outline.getAttribute('xmlurl')
 
-    // Only process RSS/Atom feed outlines (skip category folders)
     if (!xmlUrl) continue
     if (type && type !== 'rss' && type !== 'atom') continue
 

@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Feed } from '@/types/database'
+import type { Feed, FeedCategory } from '@/types/database'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Client = SupabaseClient<any>
@@ -63,11 +63,10 @@ export async function registerFeed(
     title: string
     description: string | null
     siteUrl: string | null
-    category?: import('@/types/database').FeedCategory
+    category?: FeedCategory
     submittedBy?: string
   }
-): Promise<{ feed: import('@/types/database').Feed; alreadyExisted: boolean }> {
-  // Try to find existing feed first
+): Promise<{ feed: Feed; alreadyExisted: boolean }> {
   const { data: existing } = await supabase
     .from('feeds')
     .select('*')
@@ -91,7 +90,18 @@ export async function registerFeed(
     .select('*')
     .single()
 
-  if (error) throw new Error(`Failed to register feed: ${error.message}`)
+  if (error) {
+    if (error.code === '23505') {
+      const { data: concurrent } = await supabase
+        .from('feeds')
+        .select('*')
+        .eq('url', data.url)
+        .single()
+      if (concurrent) return { feed: concurrent, alreadyExisted: true }
+    }
+    throw new Error(`Failed to register feed: ${error.message}`)
+  }
+
   return { feed: inserted, alreadyExisted: false }
 }
 

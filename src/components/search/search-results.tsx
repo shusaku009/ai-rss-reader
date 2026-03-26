@@ -21,17 +21,23 @@ export function SearchResults({ query }: SearchResultsProps) {
       return
     }
 
+    const controller = new AbortController()
     setLoading(true)
     setError(null)
 
-    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+    fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: controller.signal })
       .then(r => r.json())
       .then(data => {
         if (data.error) throw new Error(data.error)
         setResults(data.articles ?? [])
       })
-      .catch(err => setError(err instanceof Error ? err.message : '検索に失敗しました'))
+      .catch(err => {
+        if (err.name === 'AbortError') return
+        setError(err instanceof Error ? err.message : '検索に失敗しました')
+      })
       .finally(() => setLoading(false))
+
+    return () => controller.abort()
   }, [query])
 
   if (query.trim().length < 2) {

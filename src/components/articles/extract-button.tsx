@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2, FileText } from 'lucide-react'
+import { Loader2, FileText, Check } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ExtractButtonProps {
@@ -12,7 +12,7 @@ interface ExtractButtonProps {
 
 export function ExtractButton({ articleId, onExtracted }: ExtractButtonProps) {
   const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(false)
+  const [extracted, setExtracted] = useState(false)
 
   const handleExtract = async () => {
     setLoading(true)
@@ -25,16 +25,10 @@ export function ExtractButton({ articleId, onExtracted }: ExtractButtonProps) {
         return
       }
 
-      if (data.skipped) {
-        toast('すでに全文が取得済みです')
-        setDone(true)
-        return
-      }
-
-      if (data.content) {
-        onExtracted(data.content)
-        setDone(true)
-        toast('全文を取得しました')
+      if (data.skipped || data.content) {
+        onExtracted(data.content ?? '')
+        setExtracted(true)
+        toast(data.skipped ? 'すでに全文が取得済みです' : '全文を取得しました')
       } else {
         toast.error('記事の全文を取得できませんでした（サイトがブロックしている可能性があります）')
       }
@@ -45,15 +39,15 @@ export function ExtractButton({ articleId, onExtracted }: ExtractButtonProps) {
     }
   }
 
-  if (done) return null
-
   return (
-    <Button size="sm" variant="outline" onClick={handleExtract} disabled={loading}>
+    <Button size="sm" variant="outline" onClick={handleExtract} disabled={loading || extracted}>
       {loading
         ? <Loader2 className="h-3 w-3 animate-spin mr-1" />
-        : <FileText className="h-3 w-3 mr-1" />
+        : extracted
+          ? <Check className="h-3 w-3 mr-1" />
+          : <FileText className="h-3 w-3 mr-1" />
       }
-      全文を取得
+      {extracted ? '取得済み' : '全文を取得'}
     </Button>
   )
 }

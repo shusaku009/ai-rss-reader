@@ -27,32 +27,30 @@ export async function extractArticleContent(url: string): Promise<string | null>
       throw new Error('Not an HTML page')
     }
 
-    // Read body with size limit
-    const reader = res.body?.getReader()
-    if (!reader) throw new Error('No response body')
+    const bodyReader = res.body?.getReader()
+    if (!bodyReader) throw new Error('No response body')
 
     const chunks: Uint8Array[] = []
     let totalBytes = 0
 
     while (true) {
-      const { done, value } = await reader.read()
+      const { done, value } = await bodyReader.read()
       if (done) break
       totalBytes += value.byteLength
       if (totalBytes > MAX_RESPONSE_BYTES) {
-        await reader.cancel()
+        await bodyReader.cancel()
         break
       }
       chunks.push(value)
     }
 
-    const html = new TextDecoder().decode(
-      chunks.reduce((acc, chunk) => {
-        const merged = new Uint8Array(acc.length + chunk.length)
-        merged.set(acc)
-        merged.set(chunk, acc.length)
-        return merged
-      }, new Uint8Array())
-    )
+    const merged = new Uint8Array(totalBytes)
+    let offset = 0
+    for (const chunk of chunks) {
+      merged.set(chunk, offset)
+      offset += chunk.length
+    }
+    const html = new TextDecoder().decode(merged)
 
     const { document } = parseHTML(html)
     const reader2 = new Readability(document as unknown as Document)

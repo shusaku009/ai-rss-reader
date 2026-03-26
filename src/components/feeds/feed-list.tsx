@@ -85,7 +85,7 @@ export function FeedList({ onFeedsChange }: FeedListProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-2 flex-wrap">
         <AddFeedForm onAdded={handleFeedAdded} />
-        <OPMLImportButton onImported={handleFeedAdded} />
+        <OPMLImportButton />
         <OPMLExportButton />
       </div>
       {(Object.keys(CATEGORY_LABELS) as FeedCategory[]).map(category => {

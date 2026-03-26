@@ -18,7 +18,6 @@ export async function POST(_request: Request, { params }: Props) {
 
     const article = await getArticleById(supabase, id)
 
-    // Skip if content is already long enough
     if (article.content && article.content.length >= SHORT_CONTENT_THRESHOLD) {
       return NextResponse.json({ content: article.content, skipped: true })
     }

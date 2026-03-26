@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getAllFeeds, getUserSubscribedFeedIds, registerFeed, subscribeFeed } from '@/lib/db/feeds'
 import { fetchFeed } from '@/lib/rss'
-import { generateOpml, parseOpml, opmlCategoryToFeedCategory } from '@/lib/opml'
-
-const MAX_IMPORT_FEEDS = 50
+import { generateOpml, parseOpml, opmlCategoryToFeedCategory, MAX_IMPORT_FEEDS } from '@/lib/opml'
+import { isPrivateIp } from '@/lib/ssrf'
 
 export async function GET() {
   try {
@@ -60,6 +59,10 @@ export async function POST(request: Request) {
 
     for (const entry of limited) {
       try {
+        if (isPrivateIp(entry.xmlUrl)) {
+          errors.push(`${entry.title}: プライベートIPへのアクセスは許可されていません`)
+          continue
+        }
         const fetched = await fetchFeed(entry.xmlUrl)
         const { feed } = await registerFeed(supabase, {
           url: entry.xmlUrl,
