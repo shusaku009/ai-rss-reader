@@ -1,4 +1,4 @@
-import { JSDOM } from 'jsdom'
+import { parseHTML } from 'linkedom'
 import { Readability } from '@mozilla/readability'
 
 const MAX_RESPONSE_BYTES = 5 * 1024 * 1024 // 5MB
@@ -54,8 +54,8 @@ export async function extractArticleContent(url: string): Promise<string | null>
       }, new Uint8Array())
     )
 
-    const dom = new JSDOM(html, { url })
-    const reader2 = new Readability(dom.window.document)
+    const { document } = parseHTML(html)
+    const reader2 = new Readability(document as unknown as Document)
     const article = reader2.parse()
 
     if (!article?.textContent) return null
